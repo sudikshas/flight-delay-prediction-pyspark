@@ -206,7 +206,7 @@ Standard k-fold cross-validation on time-series data inflates performance estima
 **3. Distributed ML performance is an engineering problem.**
 At 15M rows with iterative modeling, pipeline runtime was a binding constraint throughout the project. Spark's lazy evaluation model caused silent recomputation of the full DAG on every action. Strategic checkpointing and Delta Lake persistence reduced per-run time by ~40%. In large-scale ML, engineering discipline around data materialization often matters more than algorithm selection.
 
-**4. Sampling strategy shapes correctness, not just performance.**
+**4. Sampling strategy shapes correctness and data leakage, not just performance.**
 Class weighting was attempted first but made training infeasible at scale. Undersampling was adopted instead — but it had to be applied per CV fold, not globally, to avoid distributional leakage between folds. Getting the sampling logic correct is a prerequisite for valid evaluation, not just a tuning decision.
 
 **5. Metric choice must reflect the end user.**
@@ -224,7 +224,6 @@ This system was designed for **passenger-centered deployment** with secondary ut
 | Use Case | Impact |
 |----------|--------|
 | Passenger alerts | 2–4 hour advance delay category notifications, enabling proactive re-booking, connection management, and travel adjustments |
-| Missed connections | Estimated 7% reduction during peak periods through earlier passenger decision-making |
 | Travel app integration | Pipeline outputs are structured delay buckets — directly consumable by airline apps, third-party travel platforms, and push notification systems |
 | Operational planning | With metric reconfiguration (precision-weighted), the same model supports airline scheduling, gate assignment, and crew coordination |
 
@@ -252,42 +251,6 @@ This system was designed for **passenger-centered deployment** with secondary ut
 | **Data Sources** | US DOT TranStats, NOAA LCD, Datahub Airport Codes |
 | **Visualization** | Plotly Express, Matplotlib, Seaborn |
 | **Collaboration** | Databricks Notebooks, GitHub |
-
----
-
-## Repository Structure
-
-```
-├── notebooks/
-│   ├── 01_eda_preprocessing.ipynb        # EDA, cleaning, missingness analysis
-│   ├── 02_feature_engineering.ipynb      # Time-based, event, graph features
-│   ├── 03_feature_selection.ipynb        # RF importance, dimension reduction
-│   ├── 04_baseline_logistic.ipynb        # Baseline LR pipeline
-│   ├── 05_random_forest.ipynb            # RF training, CV, tuning
-│   ├── 06_mlp_neural_network.ipynb       # MLP architecture experiments
-│   └── 07_evaluation_blind_test.ipynb    # 2019 blind test set evaluation
-├── src/
-│   ├── pipeline.py                       # Modular feature pipeline
-│   ├── features.py                       # Feature engineering functions
-│   ├── cv.py                             # Block-window CV implementation
-│   └── tuning.py                         # Optuna search configuration
-├── reports/
-│   └── FP_Phase_3_Report.ipynb           # Final project report
-└── README.md
-```
-
----
-
-## Team
-
-| Member | Core Responsibilities |
-|--------|-----------------------|
-| Tiffany Wei | Project lead · Phase 1 EDA · Feature selection & validation · Phase 3 pipeline visualizations |
-| Mauricio Perez | EDA · Data cleaning & preprocessing · Leakage evaluation · PageRank implementation |
-| Ananya Sini Achan | EDA · Data cleaning · Phase 3 model training & evaluation |
-| Sudiksha Sarvepalli | ML baseline development · Feature engineering · Model experimentation |
-| Justin Fiedler | Pipeline architecture · Baseline LR experiments · Final report |
-| Richard Oldham | MLP neural network training & fine-tuning |
 
 ---
 
